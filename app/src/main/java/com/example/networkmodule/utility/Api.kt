@@ -3,6 +3,7 @@ package com.example.networkmodule.utility
 import android.icu.util.TimeUnit
 import androidx.viewbinding.BuildConfig
 import com.example.networkmodule.BuildConfig.API_BASE_URL
+import com.facebook.stetho.okhttp3.StethoInterceptor
 import com.google.gson.*
 import okhttp3.OkHttpClient
 import retrofit2.Response
@@ -14,30 +15,16 @@ import javax.xml.datatype.DatatypeConstants.SECONDS
 
 
 interface Api {
-    companion object Factory {
-        fun create(): Api {
-            val retrofit = Retrofit.Builder()
-                .addCallAdapterFactory(RxJavaCallAdapterFactory.create())
-                .addConverterFactory(GsonConverterFactory.create())
-                .baseUrl(API_BASE_URL)
-                .build()
-            return retrofit.create(Api::class.java)
-        }
-    }
-
-
-
     @GET("marvel")
-   suspend fun getsuperHeroes(): Response<List<String?>?>?
+   suspend fun getsuperHeroes(): Response<MarberlHero>
 }
+
 private val okClient = OkHttpClient().newBuilder()
     .connectTimeout(10, java.util.concurrent.TimeUnit.SECONDS)
     .readTimeout(10, java.util.concurrent.TimeUnit.SECONDS)
     .writeTimeout(10, java.util.concurrent.TimeUnit.SECONDS)
+    .addNetworkInterceptor(StethoInterceptor())
     .build()
-
-//    .addNetworkInterceptor(ChuckInterceptor(InstaApi.App.appContext))
-
 
 var gson = GsonBuilder().registerTypeAdapter(Double::class.java, object :
     JsonSerializer<Double?> {
@@ -52,7 +39,7 @@ var gson = GsonBuilder().registerTypeAdapter(Double::class.java, object :
     }
 }).create()
 
-val webservice by lazy {
+val webservice by lazy {->
     Retrofit.Builder()
         .client(okClient)
         .baseUrl(API_BASE_URL)
